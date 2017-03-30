@@ -1,96 +1,88 @@
-#include<iostream>
-#include<vector>
 #include "ads.hpp"
-using namespace std;
 
-
-class binaryHeap
+binaryHeap :: binaryHeap(vector<node* > dat): data(dat)
 {
-	vector<node* > data;
-	
-	public:
-	binaryHeap(vector<node* > dat): data(dat)
+	size = data.size();
+	heapify();
+}
+
+int binaryHeap :: getSize()
+{
+	return size;
+}
+
+void binaryHeap :: heapify()
+{
+	int len = size-1;
+	int curr = !(len&1) ? (len>>1)-1 : len>>1;
+	while(curr >= 0)
 	{
-		heapify();
+		heapifyDown(curr);
+		curr--;
 	}
-	
-	int getSize()
+}
+
+node* binaryHeap :: removeMin()
+{
+	node* ans = data[0];
+	data[0] = data[size-1];
+	size--;
+	//data.pop_back();
+	heapifyDown(0);
+	return ans;
+}
+
+void binaryHeap :: insert(node* first)
+{
+	//data.push_back(first);
+	data[size] = first;
+	size++;
+	heapifyUp();
+}
+
+void binaryHeap :: heapifyUp()
+{
+	int index = size - 1;
+	while(index > 0)
 	{
-		return data.size();
-	}
-	
-	void heapify()
-	{
-		int len = data.size();
-		int curr = len/2 - 1;
-		while(curr >= 0)
+		int parent = !(index&1) ? (index>>1)-1 : index>>1;
+		if(data[index]->frequency < data[parent]->frequency)
 		{
-			int left = curr*2 + 1;
-			int right = (curr*2 + 2) < len ? curr*2 + 2 : curr;
-			int min = data[left]->frequency < data[right]->frequency ? left : right;
-			min = data[min]->frequency < data[curr]->frequency ? min : curr;
-			curr = swap(min,curr);
-			curr--;
+			index = swap(index, parent);
 		}
+		else break;
 	}
-	
-	node* removeMin()
+}
+
+void binaryHeap :: heapifyDown(int index)
+{
+	int len = size-1;
+	int len1 = !(len&1) ? (len>>1)-1 : len>>1;
+	while(index <= len1)
 	{
-		node* ans = data[0];
-		data[0] = data.back();
-		data.pop_back();
-		heapifyDown();
-		return ans;
-	}
-	
-	void insert(node* first)
-	{
-		data.push_back(first);
-		heapifyUp();
-	}
-	
-	void heapifyUp()
-	{
-		int index = data.size() - 1;
-		while(index > 0)
+		int ss = index;
+		int left = (index<<1) + 1;
+		int right = ((index<<1) + 2) <= len ? (index<<1) + 2 : index;
+		if(data[index]->frequency > data[left]->frequency)
 		{
-			int parent = index%2 == 0 ? index/2-1 : index/2;
-			if(data[index]->frequency < data[parent]->frequency)
-			{
-				index = swap(index, parent);
-			}
-			else break;
+			ss = left;
 		}
-	}
-	
-	void heapifyDown()
-	{
-		int index = 0;
-		int len = data.size()/2;
-		while(index < len)
+		if(data[ss]->frequency > data[right]->frequency)
 		{
-			int left = index*2+1;
-			int right = (index*2 + 2) < len ? index*2 + 2 : index;
-			if(data[index]->frequency > data[left]->frequency)
-			{
-				index = swap(index, left);
-			}
-			else if(data[index]->frequency > data[right]->frequency)
-			{
-				index = swap(index, right);
-			}
-			else break;
+			ss = right;
 		}
+		if(ss == index) break;
+		else index = swap(index,ss);
 	}
-	
-	int swap(int a, int b)
-	{
-		node* temp = data[a];
-		data[a] = data[b];
-		data[b] = temp;
-		return b;
-	}
-};
+}
+
+int binaryHeap :: swap(int a, int b)
+{
+	node* temp = data[a];
+	data[a] = data[b];
+	data[b] = temp;
+	return b;
+}
 			
 	
 	

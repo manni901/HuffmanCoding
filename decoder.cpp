@@ -2,6 +2,7 @@
 #include<vector>
 #include<climits>
 #include<fstream>
+#include<bitset>
 using namespace std;
 
 struct node
@@ -9,11 +10,13 @@ struct node
 	node *left;
 	node *right;
 	string data;
+	bool isExternal;
 	
 	node()
 	{
 		left = right = 0;
-		data = "null";
+		data = "";
+		isExternal = false;
 	}
 };
 
@@ -38,6 +41,7 @@ class trie
 				temp = temp->left;
 			}
 		}
+		temp->isExternal = true;
 		temp->data = val;
 	}
 	
@@ -82,7 +86,7 @@ class trie
 					cout<<"\nError in Decoding";
 					return;
 				}
-				if(temp->data != "null")
+				if(temp->isExternal)
 				{
 					ans += temp->data+"\n";
 					if(ans.length() > 10000000)
@@ -115,6 +119,7 @@ int main(int argc, char* argv[])
 	}
 	
 	D.insertAll(key,val);
+	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
 	
 	ifstream is(argv[1]);
 	is.seekg(0, ios_base::end);
@@ -123,8 +128,10 @@ int main(int argc, char* argv[])
 	vector<char> v(size/sizeof(char));
 	is.read(&v[0], size);
 	is.close();
+	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
 	
 	D.search(v);
-	cout<<"Time : "<< (clock() - start_time)<<"\n";
+	cout<<v.size()<<"\n";
+	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
 }
 	
