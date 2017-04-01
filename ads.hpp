@@ -12,10 +12,14 @@ struct node
 	node(int,int,bool);
 };
 
+
 struct pairNode
 {
 	node* data;
-	vector<pairNode*> child;
+	pairNode* left;
+	pairNode* next;
+	pairNode* prev;
+	//vector<pairNode*> child;
 	
 	pairNode(node*);
 };
