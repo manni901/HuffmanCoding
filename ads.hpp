@@ -12,6 +12,14 @@ struct node
 	node(int,int,bool);
 };
 
+struct pairNode
+{
+	node* data;
+	vector<pairNode*> child;
+	
+	pairNode(node*);
+};
+
 class heap
 {
 public:
@@ -26,8 +34,10 @@ class binaryHeap : public heap
 {
 	vector<node*> data;
 	int size;
+	int order;
+	int offset;
 	public:
-	binaryHeap(vector<node*>);
+	binaryHeap(vector<node*>, int, int);
 	int getSize();
 	void heapify();
 	node* removeMin();
@@ -37,3 +47,15 @@ class binaryHeap : public heap
 	int swap(int, int);
 };
 	
+class pairingHeap : public heap
+{
+	pairNode* root;
+	int size;
+	
+	public:
+	pairingHeap(vector<node*>);
+	int getSize();
+	void insert(node*);
+	node* removeMin();
+	pairNode* combine(pairNode*, pairNode*);
+};

@@ -1,6 +1,6 @@
 #include "ads.hpp"
 
-binaryHeap :: binaryHeap(vector<node* > dat): data(dat)
+binaryHeap :: binaryHeap(vector<node* > dat, int ord, int off): data(dat), order(ord), offset(off)
 {
 	size = data.size();
 	heapify();
@@ -14,7 +14,7 @@ int binaryHeap :: getSize()
 void binaryHeap :: heapify()
 {
 	int len = size-1;
-	int curr = !(len&1) ? (len>>1)-1 : len>>1;
+	int curr = (len-1)/order;
 	while(curr >= 0)
 	{
 		heapifyDown(curr);
@@ -27,15 +27,14 @@ node* binaryHeap :: removeMin()
 	node* ans = data[0];
 	data[0] = data[size-1];
 	size--;
-	//data.pop_back();
+	data.pop_back();
 	heapifyDown(0);
 	return ans;
 }
 
 void binaryHeap :: insert(node* first)
 {
-	//data.push_back(first);
-	data[size] = first;
+	data.push_back(first);
 	size++;
 	heapifyUp();
 }
@@ -45,7 +44,7 @@ void binaryHeap :: heapifyUp()
 	int index = size - 1;
 	while(index > 0)
 	{
-		int parent = !(index&1) ? (index>>1)-1 : index>>1;
+		int parent = (index-1)/order;
 		if(data[index]->frequency < data[parent]->frequency)
 		{
 			index = swap(index, parent);
@@ -57,19 +56,15 @@ void binaryHeap :: heapifyUp()
 void binaryHeap :: heapifyDown(int index)
 {
 	int len = size-1;
-	int len1 = !(len&1) ? (len>>1)-1 : len>>1;
+	int len1 = (len-1)/order;
 	while(index <= len1)
 	{
 		int ss = index;
-		int left = (index<<1) + 1;
-		int right = ((index<<1) + 2) <= len ? (index<<1) + 2 : index;
-		if(data[index]->frequency > data[left]->frequency)
+		int start = index*order;
+		for(int i=1;i<=order;i++)
 		{
-			ss = left;
-		}
-		if(data[ss]->frequency > data[right]->frequency)
-		{
-			ss = right;
+			start++;
+			if(start <= len && data[start]->frequency < data[ss]->frequency) ss = start;
 		}
 		if(ss == index) break;
 		else index = swap(index,ss);

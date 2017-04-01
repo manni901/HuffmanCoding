@@ -35,9 +35,15 @@ int main(int argc, char* argv[])
 	genNodeArray(freqTable, V);
 	cout<<"NodeArray Built\n";
 	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";		
-	heap* BHeap = new binaryHeap(V);
-	cout<<"Heap Built\n";
-	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
+	heap* BHeap = new binaryHeap(V,2,0);
+	//cout<<"Heap Built\n";
+	//cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
+	
+	/*while(BHeap->getSize() != 0)
+	{
+		node* test = BHeap->removeMin();
+		//cout<<test->value<<" "<<test->frequency<<"\n";
+	}*/
 	
 	while(BHeap->getSize() > 1)
 	{
@@ -79,7 +85,7 @@ void genNodeArray(vector<int>& freqTable, vector<node*>& V)
 	{
 		if(freqTable[i] != 0)
 		{
-			V.push_back(new node(freqTable[i], i, true));
+			V.push_back(new node(freqTable[LEN-i-1], LEN-i-1, true));
 		}
 	}
 }

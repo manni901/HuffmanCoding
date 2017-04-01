@@ -5,7 +5,9 @@ using namespace std;
 
 int main()
 {
-	int x = 187;
-	cout<<(x>>1);
-	cout<<!(x&1);
+	vector<int> V;
+	V.push_back(int(1));
+	int *n = &V[V.size()-1];
+	int *a = n;
+	cout<<(*a);
 }
