@@ -1,6 +1,6 @@
 #include "ads.hpp"
 
-binaryHeap :: binaryHeap(vector<node* > dat, int ord, int off): data(dat), order(ord), offset(off)
+binaryHeap :: binaryHeap(int ord, int off): order(ord), offset(off)
 {
 	size = data.size();
 	heapify();

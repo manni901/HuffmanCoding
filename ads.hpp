@@ -41,7 +41,7 @@ class binaryHeap : public heap
 	int order;
 	int offset;
 	public:
-	binaryHeap(vector<node*>, int, int);
+	binaryHeap(int, int);
 	int getSize();
 	void heapify();
 	node* removeMin();
@@ -57,7 +57,7 @@ class pairingHeap : public heap
 	int size;
 	
 	public:
-	pairingHeap(vector<node*>);
+	pairingHeap();
 	int getSize();
 	void insert(node*);
 	node* removeMin();

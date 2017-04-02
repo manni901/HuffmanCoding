@@ -2,6 +2,7 @@
 #include<utility>
 #include<fstream>
 #include<climits>
+#include<stack>
 using namespace std;
 
 #define LEN 1000000
@@ -18,9 +19,8 @@ node :: node(int f, int v, bool x)
 
 void fillFrequencyTable(char*, vector<int>&);
 void genNodeArray(vector<int>&, vector<node*>&);
-void buildCodeTable(vector<vector<char> >&, node*);
-void writeCodeTable(vector<vector<char> >&, vector<int>&);
-void writeEncodedFile(char*, vector<vector<char> >&);
+void buildCodeTable(vector<string>&, node*);
+void writeEncodedFile(char*, vector<string>&);
 
 int max(int a, int b)
 {
@@ -41,45 +41,42 @@ int main(int argc, char* argv[])
 	genNodeArray(freqTable, V);
 	cout<<"NodeArray Built\n";
 	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";		
-	heap* BHeap = new pairingHeap(V);
-	cout<<"Heap Built\n";
-	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
-	
-	/*while(BHeap->getSize() != 0)
+	heap* BHeap[] = {new binaryHeap(2,0), new binaryHeap(4,0), new pairingHeap()};
+	node* root = 0;
+	for(int k=2;k<3;k++)
 	{
-		node* test = BHeap->removeMin();
-		//cout<<test->value<<" "<<test->frequency<<"\n";
-	}*/
-	
-	clock_t ST;
-	ofstream ff("timings.txt");
-	while(BHeap->getSize() > 1)
-	{
+		clock_t ST;
 		ST = clock();
-		node* min = BHeap->removeMin();
-		node* min1 = BHeap->removeMin();
-		ff<<clock() - ST<<"\n";
-		node* n = new node(min->frequency + min1->frequency, 0, false);
-		n->left = min;
-		n->right = min1;
-		//ST = clock();
-		BHeap->insert(n);
-		//ff<<clock() - ST<<"\n";
+		for(int l=9;l<10;l++)
+		{
+			for(int m=0;m<V.size();m++)
+			{
+				BHeap[k]->insert(V[m]);
+			}
+			while(BHeap[k]->getSize() > 1)
+			{
+				node* min = BHeap[k]->removeMin();
+				node* min1 = BHeap[k]->removeMin();
+				node* n = new node(min->frequency + min1->frequency, 0, false);
+				n->left = min;
+				n->right = min1;
+				BHeap[k]->insert(n);
+			}
+			root = BHeap[k]->removeMin();
+		}
+		cout<<clock() - ST<<"\n";
 	}
-	node* root = BHeap->removeMin();
+	
 	cout<<"Huffman Tree Built\n";
 	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
 	
-	vector<vector<char> > codeTable(LEN);
+	vector<string> codeTable(LEN);
 	buildCodeTable(codeTable, root);
 	cout<<"CodeTable Built\n";
 	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
 	
 	writeEncodedFile(argv[1], codeTable);
 	cout<<"\nEncodedFileEnd";
-	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
-	writeCodeTable(codeTable, freqTable);
-	cout<<"\nTableFile Done\n";
 	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
 }
 
@@ -102,53 +99,45 @@ void genNodeArray(vector<int>& freqTable, vector<node*>& V)
 	}
 }
 
-void buildCodeTable(vector<vector<char> >& codeTable, node* root)
+void buildCodeTable(vector<string>& codeTable, node* root)
 {
-	vector<pair<node*,vector<char> > > qu;
-	qu.push_back(make_pair(root,vector<char>()));
+	ofstream code(CODE);
+	
+	stack<pair<node*,string > > qu;
+	qu.push(make_pair(root,""));
 	while(!qu.empty())
 	{
-		pair<node*,vector<char> > P = qu.back();
-		qu.pop_back();
+		pair<node*,string> P = qu.top();
+		qu.pop();
 		if(!P.first->isExternal)
 		{
-			P.second.push_back('1');
-			qu.push_back(make_pair(P.first->right,P.second));
-			P.second.pop_back(); P.second.push_back('0');
-			qu.push_back(make_pair(P.first->left,P.second));
+			qu.push(make_pair(P.first->right,P.second+'1'));
+			qu.push(make_pair(P.first->left,P.second+'0'));
 		}
 		else
 		{
-			codeTable[P.first->value] = P.second;
+			int v = P.first->value;
+			codeTable[v] = P.second;
+			code << v << " " << codeTable[v] << "\n";
 		}
 	}
 }
 
-void writeCodeTable(vector<vector<char> >& codeTable, vector<int>& freqTable)
-{
-	ofstream code(CODE);
-	for(int i=0;i<LEN;i++)
-	{
-		if(freqTable[i] != 0)
-		{
-			code << i << " " << string(codeTable[i].begin(), codeTable[i].end()) << "\n";
-		}
-	}
-	code.close();
-}
-
-void writeEncodedFile(char* input, vector<vector<char> >& codeTable)
+void writeEncodedFile(char* input, vector<string>& codeTable)
 {
 	vector<char> bits;
 	ifstream is(input);
 	vector<char> encrypted;
 	int val=0;
 	char byteCode;
+	char ans[100000];
+	int windex = 0;
 	int j = CHAR_BIT-1;
 	char *buf = new char[BUFLEN];
 	is.seekg (0, is.end);
     int fLength = is.tellg();
     is.seekg (0, is.beg);
+    ofstream enco(ENCO, ios::out | ios::binary);
 	while(is)
 	{
 		is.read(buf, BUFLEN);
@@ -157,15 +146,16 @@ void writeEncodedFile(char* input, vector<vector<char> >& codeTable)
 			if(buf[x] >= '0' && buf[x] <= '9') val = val*10 + (buf[x] - '0');
 			else if(buf[x] == '\n')
 			{
-				vector<char> newCode = codeTable[val];
-				for(int i=0;i<newCode.size();i++)
+				string newCode = codeTable[val];
+				for(int i=0;i<newCode.length();i++)
 				{
 					if(newCode[i] == '0') byteCode &= ~(1 << j);
 					else byteCode |= 1 << j;
 					j--;
 					if(j<0)
 					{
-						encrypted.push_back(byteCode);
+						ans[windex++] = byteCode;
+						if(windex == 100000) {enco.write(&ans[0], windex); windex = 0;}
 						j = CHAR_BIT-1;
 					}
 				}
@@ -174,9 +164,7 @@ void writeEncodedFile(char* input, vector<vector<char> >& codeTable)
 		}
 		fLength -= BUFLEN;
 	}
+	if(windex > 0) enco.write(&ans[0], windex);
 	is.close();
-	
-	ofstream enco(ENCO, ios::out | ios::binary);
-	enco.write(&encrypted[0], encrypted.size());
 	enco.close();
 }

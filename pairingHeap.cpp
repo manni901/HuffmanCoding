@@ -2,14 +2,10 @@
 
 pairNode :: pairNode(node* n) : data(n) {}
 
-pairingHeap :: pairingHeap(vector<node*> V)
+pairingHeap :: pairingHeap()
 {
 	root = 0;
 	size = 0;
-	for(int i=0;i<V.size();i++)
-	{
-		insert(V[i]);
-	}
 }
 
 int pairingHeap :: getSize()
