@@ -131,7 +131,6 @@ int main(int argc, char* argv[])
 	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
 	
 	D.search(v);
-	cout<<v.size()<<"\n";
 	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
 }
 	

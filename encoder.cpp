@@ -19,6 +19,7 @@ node :: node(int f, int v, bool x)
 
 void fillFrequencyTable(char*, vector<int>&);
 void genNodeArray(vector<int>&, vector<node*>&);
+node* buildHuffmanTree(heap*, vector<node*>&);
 void buildCodeTable(vector<string>&, node*);
 void writeEncodedFile(char*, vector<string>&);
 
@@ -29,19 +30,21 @@ int max(int a, int b)
 
 int main(int argc, char* argv[])
 {
+	cout<<sizeof(int)<<" "<<sizeof(node*)<<"\n";
 	clock_t start_time;
 	start_time = clock();
 	int i;
 	vector<int> freqTable(LEN,0);
 	vector<node*> V;
 	cout<<"Start\n";
+	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
 	fillFrequencyTable(argv[1], freqTable);
 	cout<<"Frequency Done\n";
 	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
 	genNodeArray(freqTable, V);
 	cout<<"NodeArray Built\n";
 	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";		
-	heap* BHeap[] = {new binaryHeap(2,0), new binaryHeap(4,0), new pairingHeap()};
+	heap* Heap[] = {new KHeap(2,0), new KHeap(4,3), new pairingHeap()};
 	node* root = 0;
 	for(int k=2;k<3;k++)
 	{
@@ -49,20 +52,7 @@ int main(int argc, char* argv[])
 		ST = clock();
 		for(int l=9;l<10;l++)
 		{
-			for(int m=0;m<V.size();m++)
-			{
-				BHeap[k]->insert(V[m]);
-			}
-			while(BHeap[k]->getSize() > 1)
-			{
-				node* min = BHeap[k]->removeMin();
-				node* min1 = BHeap[k]->removeMin();
-				node* n = new node(min->frequency + min1->frequency, 0, false);
-				n->left = min;
-				n->right = min1;
-				BHeap[k]->insert(n);
-			}
-			root = BHeap[k]->removeMin();
+			buildHuffmanTree(Heap[i], V);
 		}
 		cout<<clock() - ST<<"\n";
 	}
@@ -76,15 +66,35 @@ int main(int argc, char* argv[])
 	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
 	
 	writeEncodedFile(argv[1], codeTable);
-	cout<<"\nEncodedFileEnd";
+	cout<<"Encoding Done\n";
 	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
 }
 
 void fillFrequencyTable(char* filename, vector<int>& freqTable)
 {
 	ifstream is(filename);
-	int val;
-	while(is >> val) freqTable[val]++;
+	int val=0;
+	char *buf = new char[BUFLEN];
+	
+	is.seekg (0, is.end);
+    int fLength = is.tellg();
+    is.seekg (0, is.beg);
+    
+	while(is)
+	{
+		is.read(buf, BUFLEN);
+		for(int x=0;x<min(BUFLEN,fLength);x++)
+		{
+			if(buf[x] >= '0' && buf[x] <= '9') val = val*10 + (buf[x] - '0');
+			else if(buf[x] == '\n')
+			{
+				
+				freqTable[val]++;
+				val = 0;
+			}
+		}
+		fLength -= BUFLEN;
+	}
 	is.close();
 }
 
@@ -99,9 +109,28 @@ void genNodeArray(vector<int>& freqTable, vector<node*>& V)
 	}
 }
 
+node* buildHuffmanTree(heap* H, vector<node*>& V)
+{
+	for(int m=0;m<V.size();m++)
+	{
+		H->insert(V[m]);
+	}
+	while(BHeap[k]->getSize() > 1)
+	{
+		node* min = H->removeMin();
+		node* min1 = H->removeMin();
+		node* n = new node(min->frequency + min1->frequency, 0, false);
+		n->left = min;
+		n->right = min1;
+		Heap->insert(n);
+	}
+	return BHeap[k]->removeMin();
+}
+
 void buildCodeTable(vector<string>& codeTable, node* root)
 {
 	ofstream code(CODE);
+	string outstr = "";
 	
 	stack<pair<node*,string > > qu;
 	qu.push(make_pair(root,""));
@@ -118,18 +147,16 @@ void buildCodeTable(vector<string>& codeTable, node* root)
 		{
 			int v = P.first->value;
 			codeTable[v] = P.second;
-			code << v << " " << codeTable[v] << "\n";
+			code << v << " " << P.second << "\n";
 		}
 	}
 }
 
 void writeEncodedFile(char* input, vector<string>& codeTable)
 {
-	vector<char> bits;
 	ifstream is(input);
-	vector<char> encrypted;
 	int val=0;
-	char byteCode;
+	char byteCode=0;
 	char ans[100000];
 	int windex = 0;
 	int j = CHAR_BIT-1;
@@ -137,7 +164,7 @@ void writeEncodedFile(char* input, vector<string>& codeTable)
 	is.seekg (0, is.end);
     int fLength = is.tellg();
     is.seekg (0, is.beg);
-    ofstream enco(ENCO, ios::out | ios::binary);
+    ofstream enco(ENCO, ios::out | ios::K);
 	while(is)
 	{
 		is.read(buf, BUFLEN);
@@ -149,13 +176,12 @@ void writeEncodedFile(char* input, vector<string>& codeTable)
 				string newCode = codeTable[val];
 				for(int i=0;i<newCode.length();i++)
 				{
-					if(newCode[i] == '0') byteCode &= ~(1 << j);
-					else byteCode |= 1 << j;
-					j--;
+					byteCode |= (newCode[i] - '0') << (j--);
 					if(j<0)
 					{
 						ans[windex++] = byteCode;
-						if(windex == 100000) {enco.write(&ans[0], windex); windex = 0;}
+						byteCode=0;
+						if(windex == 100000) { enco.write(&ans[0], windex); windex = 0;}
 						j = CHAR_BIT-1;
 					}
 				}

@@ -1,17 +1,18 @@
 #include "ads.hpp"
 
-binaryHeap :: binaryHeap(int ord, int off): order(ord), offset(off)
+KHeap :: KHeap(int ord, int off): order(ord), offset(off)
 {
-	size = data.size();
+	size = 0;
+	while(off--) data.push_back(0);
 	heapify();
 }
 
-int binaryHeap :: getSize()
+int KHeap :: getSize()
 {
 	return size;
 }
 
-void binaryHeap :: heapify()
+void KHeap :: heapify()
 {
 	int len = size-1;
 	int curr = (len-1)/order;
@@ -22,30 +23,30 @@ void binaryHeap :: heapify()
 	}
 }
 
-node* binaryHeap :: removeMin()
+node* KHeap :: removeMin()
 {
-	node* ans = data[0];
-	data[0] = data[size-1];
+	node* ans = data[offset];
+	data[offset] = data[size-1+offset];
 	size--;
 	data.pop_back();
 	heapifyDown(0);
 	return ans;
 }
 
-void binaryHeap :: insert(node* first)
+void KHeap :: insert(node* first)
 {
 	data.push_back(first);
 	size++;
 	heapifyUp();
 }
 
-void binaryHeap :: heapifyUp()
+void KHeap :: heapifyUp()
 {
 	int index = size - 1;
 	while(index > 0)
 	{
 		int parent = (index-1)/order;
-		if(data[index]->frequency < data[parent]->frequency)
+		if(data[index+offset]->frequency < data[parent+offset]->frequency)
 		{
 			index = swap(index, parent);
 		}
@@ -53,7 +54,7 @@ void binaryHeap :: heapifyUp()
 	}
 }
 
-void binaryHeap :: heapifyDown(int index)
+void KHeap :: heapifyDown(int index)
 {
 	int len = size-1;
 	int len1 = (len-1)/order;
@@ -64,18 +65,18 @@ void binaryHeap :: heapifyDown(int index)
 		for(int i=1;i<=order;i++)
 		{
 			start++;
-			if(start <= len && data[start]->frequency < data[ss]->frequency) ss = start;
+			if(start <= len && data[start+offset]->frequency < data[ss+offset]->frequency) ss = start;
 		}
 		if(ss == index) break;
 		else index = swap(index,ss);
 	}
 }
 
-int binaryHeap :: swap(int a, int b)
+int KHeap :: swap(int a, int b)
 {
-	node* temp = data[a];
-	data[a] = data[b];
-	data[b] = temp;
+	node* temp = data[a+offset];
+	data[a+offset] = data[b+offset];
+	data[b+offset] = temp;
 	return b;
 }
 			

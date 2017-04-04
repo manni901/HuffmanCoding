@@ -34,14 +34,14 @@ public:
     virtual int getSize()=0;
 };
 
-class binaryHeap : public heap
+class KHeap : public heap
 {
 	vector<node*> data;
 	int size;
 	int order;
 	int offset;
 	public:
-	binaryHeap(int, int);
+	KHeap(int, int);
 	int getSize();
 	void heapify();
 	node* removeMin();
