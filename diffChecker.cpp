@@ -18,15 +18,22 @@ int main()
 	}
 	cout<<maxi<<" "<<maxi1;*/
 	
-	ifstream f1("sample_input_large.txt");
+	fstream f1("large.txt");
 	ifstream f2("decoded.txt");
 	
 	long long int a,b;
 	int err = 0;
+	int cc = 0;
+	int ab = 0;
 	while(f1>>a && f2>>b)
 	{
-		if(a != b)err++;
+		ab++;
+		while(a > 999999)f1>>a;
+		//cout<<a<<"&&&&&"<<b<<"\n";
+		if(a != b){ cout<<a<<" &&&&& "<<b<<"\n";err++;}
+		cc++;
+		if(cc%1000000 == 0)cout<<cc<<"----"<<err<<"\n";
 	}
-	cout<<err;
+	cout<<"------------------------------"<<err;
 }
 	

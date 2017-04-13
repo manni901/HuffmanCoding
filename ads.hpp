@@ -19,14 +19,13 @@ struct pairNode
 	pairNode* left;
 	pairNode* next;
 	pairNode* prev;
-	//vector<pairNode*> child;
 	
 	pairNode(node*);
 };
 
 class heap
 {
-public:
+	public:
     heap(){}
     virtual ~heap(){}
     virtual node* removeMin()=0;

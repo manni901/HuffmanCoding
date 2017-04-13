@@ -2,8 +2,17 @@
 #include<vector>
 #include<climits>
 #include<fstream>
-#include<bitset>
+#include<string>
+#include<ctime>
 using namespace std;
+
+#define SIZ 10000000    // Buffer length for reading from encoded file
+#define DECO "decoded.txt"
+
+int min(int a, int b)
+{
+	return a < b ? a : b;
+}
 
 struct node
 {
@@ -59,15 +68,14 @@ class trie
 		}
 	}
 	
-	void search(vector<char> encoded)
+	node* search(char* encoded, int s, node* temp, ofstream& outp)
 	{
-		ofstream outp("decoded.txt");
-		node* temp = root;
+		if(temp == 0) temp = root;
 		
 		char bitVal;
 		string ans = "";
 
-		for(int x=0;x<(int)encoded.size();x++)
+		for(int x=0;x<s;x++)
 		{
 			bitVal = encoded[x];
 			for (int i = CHAR_BIT-1; i >= 0; i--)
@@ -84,7 +92,7 @@ class trie
 				if(temp == 0)
 				{
 					cout<<"\nError in Decoding";
-					return;
+					return 0;
 				}
 				if(temp->isExternal)
 				{
@@ -98,7 +106,8 @@ class trie
 				}
 			}
 		}
-		outp<<ans;
+		if(ans.length() > 0 ) outp<<ans;
+		return temp;
 	}
 };
 		
@@ -106,6 +115,7 @@ int main(int argc, char* argv[])
 {
 	clock_t start_time;
 	start_time = clock();
+	
 	trie D;
 	
 	ifstream codeTable(argv[2]);
@@ -117,20 +127,28 @@ int main(int argc, char* argv[])
 		key.push_back(b);
 		val.push_back(a);
 	}
+	codeTable.close();
 	
 	D.insertAll(key,val);
-	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
+
 	
-	ifstream is(argv[1]);
+	ifstream is(argv[1], ios::binary);
 	is.seekg(0, ios_base::end);
-	size_t size=is.tellg();
+	int size=is.tellg();
 	is.seekg(0, ios_base::beg);
-	vector<char> v(size/sizeof(char));
-	is.read(&v[0], size);
-	is.close();
-	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
 	
-	D.search(v);
+	char *v = new char[SIZ];
+	node* temp = 0;
+	ofstream outp(DECO);
+	while(is)
+	{
+		is.read(&v[0], SIZ);
+		temp = D.search(v, min(SIZ,size), temp, outp);
+		size -= SIZ;
+	}
+	is.close();
+	outp.close();
+	
 	cout<<"Time : "<< (float)(clock() - start_time)/1000000<<"\n";
 }
 	

@@ -7,8 +7,7 @@ using namespace std;
 
 int main()
 {
-	char a = 'a';
-	bitset<CHAR_BIT> B(a);
-	string c = B.to_string();
-	cout<<c;
+	int a = 250000000;
+	cout<<a+3;
+		
 }
